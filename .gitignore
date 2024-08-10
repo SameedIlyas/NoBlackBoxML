@@ -1,0 +1,15 @@
+# Ignore node_modules directory
+node/node_modules/
+
+data/dataset/*
+
+common/js_objects/samples.js
+
+!data/dataset/
+
+data/dataset/img/*
+data/dataset/json/*
+
+!data/dataset/img/
+!data/dataset/json/
+
