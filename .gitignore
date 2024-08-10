@@ -3,8 +3,7 @@ node/node_modules/
 
 data/dataset/*
 
-common/js_objects/samples.js
-
+common/js_objects/*
 !data/dataset/
 
 data/dataset/img/*
