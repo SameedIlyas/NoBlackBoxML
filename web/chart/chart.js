@@ -1,45 +1,52 @@
-class Chart{
-    constructor(container,samples,options,onClick=null){
-       this.samples=samples;
- 
-       this.axesLabels=options.axesLabels;
-       this.styles=options.styles;
-       this.icon=options.icon;
-       this.onClick=onClick;
- 
-       this.canvas=document.createElement("canvas");
-       this.canvas.width=options.size;
-       this.canvas.height=options.size;
-       this.canvas.style="background-color:white;";
+class Chart {
+   constructor(container, samples, options, onClick = null) {
+       this.samples = samples;
+
+       this.axesLabels = options.axesLabels;
+       this.styles = options.styles;
+       this.icon = options.icon;
+       this.onClick = onClick;
+
+       this.canvas = document.createElement("canvas");
+       this.canvas.width = options.size;
+       this.canvas.height = options.size;
+       this.canvas.style = "background-color:white;";
        container.appendChild(this.canvas);
- 
-       this.ctx=this.canvas.getContext("2d");
- 
-       this.margin=options.size*0.11;
-       this.transparency=options.transparency||1;
- 
-       this.dataTrans={
-          offset:[0,0],
-          scale:1
+
+       this.ctx = this.canvas.getContext("2d");
+
+       this.margin = options.size * 0.11;
+       this.transparency = options.transparency || 1;
+
+       this.dataTrans = {
+           offset: [0, 0],
+           scale: 1
        };
-       this.dragInfo={
-          start:[0,0],
-          end:[0,0],
-          offset:[0,0],
-          dragging:false
+       this.dragInfo = {
+           start: [0, 0],
+           end: [0, 0],
+           offset: [0, 0],
+           dragging: false
        };
- 
-       this.hoveredSample=null;
-       this.selectedSample=null;
- 
-       this.pixelBounds=this.#getPixelBounds();
-       this.dataBounds=this.#getDataBounds();
-       this.defaultDataBounds=this.#getDataBounds();
- 
+
+       this.hoveredSample = null;
+       this.selectedSample = null;
+
+       this.pixelBounds = this.#getPixelBounds();
+       this.dataBounds = this.#getDataBounds();
+       this.defaultDataBounds = this.#getDataBounds();
+
        this.#draw();
- 
+
        this.#addEventListeners();
-    }
+   }
+
+   update() {
+      this.dataBounds = this.#getDataBounds();
+      this.defaultDataBounds = this.dataBounds;
+      this.axesLabels = options.axesLabels;
+      this.#draw();
+  }
  
     #addEventListeners(){
        const {canvas,dataTrans,dragInfo}=this;
@@ -198,22 +205,25 @@ class Chart{
        return bounds;
     }
  
-    #getDataBounds(){
-       const {samples}=this;
-       const x=samples.map(s=>s.point[0]);
-       const y=samples.map(s=>s.point[1]);
-       const minX=Math.min(...x);
-       const maxX=Math.max(...x);
-       const minY=Math.min(...y);
-       const maxY=Math.max(...y);
-       const bounds={
-          left:minX,
-          right:maxX,
-          top:maxY,
-          bottom:minY
-       };
-       return bounds;
-    }
+    // Updating this method to draw all four features
+    #getDataBounds() {
+      const { samples } = this;
+      const x = samples.map(s => s.point[0]);
+      const y = samples.map(s => s.point[1]);
+  
+      const minX = Math.min(...x);
+      const maxX = Math.max(...x);
+      const minY = Math.min(...y);
+      const maxY = Math.max(...y);
+  
+      return {
+          left: minX,
+          right: maxX,
+          top: maxY,
+          bottom: minY
+      };
+  }
+  
  
     #draw(){
        const {ctx,canvas}=this;
@@ -262,120 +272,123 @@ class Chart{
        );
     }
  
-    #drawAxes(){
-       const {ctx,canvas,axesLabels,margin}=this;
-       const {left,right,top,bottom}=this.pixelBounds;
- 
-       ctx.clearRect(0,0,this.canvas.width,margin);
-       ctx.clearRect(0,0,margin,this.canvas.height);
-       ctx.clearRect(this.canvas.width-margin,0,
-          margin,this.canvas.height
-       );
-       ctx.clearRect(0,this.canvas.height-margin,
-          this.canvas.width,margin
-       );
- 
-       graphics.drawText(ctx,{
-          text:axesLabels[0],
-          loc:[canvas.width/2,bottom+margin/2],
-          size:margin*0.6
-       });
- 
-       ctx.save();
-       ctx.translate(left-margin/2,canvas.height/2);
-       ctx.rotate(-Math.PI/2);
-       graphics.drawText(ctx,{
-          text:axesLabels[1],
-          loc:[0,0],
-          size:margin*0.6
-       });
-       ctx.restore();
- 
-       ctx.beginPath();
-       ctx.moveTo(left,top);
-       ctx.lineTo(left,bottom);
-       ctx.lineTo(right,bottom);
-       ctx.setLineDash([5,4]);
-       ctx.lineWidth=2;
-       ctx.strokeStyle="lightgray";
-       ctx.stroke();
-       ctx.setLineDash([]);
- 
-       const dataMin=math.remapPoint(
+    #drawAxes() {
+      const { ctx, canvas, axesLabels, margin } = this;
+      const { left, right, top, bottom } = this.pixelBounds;
+
+      ctx.clearRect(0, 0, this.canvas.width, margin);
+      ctx.clearRect(0, 0, margin, this.canvas.height);
+      ctx.clearRect(this.canvas.width - margin, 0,
+          margin, this.canvas.height
+      );
+      ctx.clearRect(0, this.canvas.height - margin,
+          this.canvas.width, margin
+      );
+
+      // Draw the X and Y axis labels
+      graphics.drawText(ctx, {
+          text: axesLabels[0],
+          loc: [canvas.width / 2, bottom + margin / 2],
+          size: margin * 0.6
+      });
+
+      ctx.save();
+      ctx.translate(left - margin / 2, canvas.height / 2);
+      ctx.rotate(-Math.PI / 2);
+      graphics.drawText(ctx, {
+          text: axesLabels[1],
+          loc: [0, 0],
+          size: margin * 0.6
+      });
+      ctx.restore();
+
+      ctx.beginPath();
+      ctx.moveTo(left, top);
+      ctx.lineTo(left, bottom);
+      ctx.lineTo(right, bottom);
+      ctx.setLineDash([5, 4]);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "lightgray";
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Displaying min and max values for each axis
+      const dataMin = math.remapPoint(
           this.pixelBounds,
           this.dataBounds,
-          [left,bottom]
-       );
-       graphics.drawText(ctx,{
-          text:math.formatNumber(dataMin[0],2),
-          loc:[left,bottom],
-          size:margin*0.3,
-          align:"left",
-          vAlign:"top"
-       });
-       ctx.save();
-       ctx.translate(left,bottom);
-       ctx.rotate(-Math.PI/2);
-       graphics.drawText(ctx,{
-          text:math.formatNumber(dataMin[1],2),
-          loc:[0,0],
-          size:margin*0.3,
-          align:"left",
-          vAlign:"bottom"
-       });
-       ctx.restore();
-       
-       const dataMax=math.remapPoint(
+          [left, bottom]
+      );
+      graphics.drawText(ctx, {
+          text: math.formatNumber(dataMin[0], 2),
+          loc: [left, bottom],
+          size: margin * 0.3,
+          align: "left",
+          vAlign: "top"
+      });
+      ctx.save();
+      ctx.translate(left, bottom);
+      ctx.rotate(-Math.PI / 2);
+      graphics.drawText(ctx, {
+          text: math.formatNumber(dataMin[1], 2),
+          loc: [0, 0],
+          size: margin * 0.3,
+          align: "left",
+          vAlign: "bottom"
+      });
+      ctx.restore();
+
+      const dataMax = math.remapPoint(
           this.pixelBounds,
           this.dataBounds,
-          [right,top]
-       );
-       graphics.drawText(ctx,{
-          text:math.formatNumber(dataMax[0],2),
-          loc:[right,bottom],
-          size:margin*0.3,
-          align:"right",
-          vAlign:"top"
-       });
-       ctx.save();
-       ctx.translate(left,top);
-       ctx.rotate(-Math.PI/2);
-       graphics.drawText(ctx,{
-          text:math.formatNumber(dataMax[1],2),
-          loc:[0,0],
-          size:margin*0.3,
-          align:"right",
-          vAlign:"bottom"
-       });
-       ctx.restore();
-    }
+          [right, top]
+      );
+      graphics.drawText(ctx, {
+          text: math.formatNumber(dataMax[0], 2),
+          loc: [right, bottom],
+          size: margin * 0.3,
+          align: "right",
+          vAlign: "top"
+      });
+      ctx.save();
+      ctx.translate(left, top);
+      ctx.rotate(-Math.PI / 2);
+      graphics.drawText(ctx, {
+          text: math.formatNumber(dataMax[1], 2),
+          loc: [0, 0],
+          size: margin * 0.3,
+          align: "right",
+          vAlign: "bottom"
+      });
+      ctx.restore();
+  }
  
-    #drawSamples(samples){
-       const {ctx,dataBounds,pixelBounds}=this;
-       for(const sample of samples){ 
-          const {point,label}=sample;
-          const pixelLoc=math.remapPoint(
-             dataBounds,pixelBounds,point
+    // Updating drawSamples method to handle the new features
+    #drawSamples(samples) {
+      const { ctx, dataBounds, pixelBounds } = this;
+      for (const sample of samples) {
+          const { point, label } = sample;
+          const pixelLoc = math.remapPoint(
+              dataBounds, pixelBounds, point
           );
-          switch(this.icon){
-             case "image":
-                graphics.drawImage(ctx,
-                   this.styles[label].image,
-                   pixelLoc
-                );
-                break;
-             case "text":
-                graphics.drawText(ctx,{
-                   text:this.styles[label].text,
-                   loc:pixelLoc,
-                   size:20
-                });
-                break;
-             default:
-                graphics.drawPoint(ctx,pixelLoc,
-                   this.styles[label].color);
-                break;
+          switch (this.icon) {
+              case "image":
+                  graphics.drawImage(ctx,
+                      this.styles[label].image,
+                      pixelLoc
+                  );
+                  break;
+              case "text":
+                  graphics.drawText(ctx, {
+                      text: this.styles[label].text,
+                      loc: pixelLoc,
+                      size: 20
+                  });
+                  break;
+              default:
+                  graphics.drawPoint(ctx, pixelLoc,
+                      this.styles[label].color);
+                  break;
           }
-       }
-    }
+      }
+  }
  }

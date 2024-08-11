@@ -7,6 +7,17 @@
    </head>
    <body>
       <h1>Data Viewer</h1>
+      <div>
+         <label for="xAxisSelect">X Axis:</label>
+         <select id="xAxisSelect">
+            <!-- Options will be dynamically populated -->
+         </select>
+
+         <label for="yAxisSelect">Y Axis:</label>
+         <select id="yAxisSelect">
+            <!-- Options will be dynamically populated -->
+         </select>
+      </div>
       <div id="chartContainer"></div>
       <div id="container"></div>
       <script src="../common/js_objects/features.js"></script>
@@ -18,30 +29,76 @@
       <script src="./chart/chart.js"></script>
       
       <script>
-         const {samples,featureNames}=features;
-         const groups=utils.groupBy(samples,"student_id");
+         const {samples, featureNames} = features;
+         const groups = utils.groupBy(samples, "student_id");
          
-         for(let student_id in groups){
-            const samples=groups[student_id];
-            const studentName=samples[0].student_name;
-            createRow(container,studentName,samples);
+         for (let student_id in groups) {
+            const samples = groups[student_id];
+            const studentName = samples[0].student_name;
+            createRow(container, studentName, samples);
          }
 
-         const options={
-            size:500,
-            axesLabels:featureNames,
-            styles:utils.styles,
-            transparency:0.7,
-            icon:"image"
+         const options = {
+            size: 500,
+            axesLabels: featureNames,
+            styles: utils.styles,
+            transparency: 0.7,
+            icon: "image"
          };
          graphics.generateImages(utils.styles);
 
-         const chart=new Chart(
-            chartContainer,
-            samples,
-            options,
-            handleClick
-         );
+         // Populate dropdowns with feature names
+         const xAxisSelect = document.getElementById('xAxisSelect');
+         const yAxisSelect = document.getElementById('yAxisSelect');
+
+         featureNames.forEach((name, index) => {
+            const optionX = document.createElement('option');
+            optionX.value = index;
+            optionX.textContent = name;
+            xAxisSelect.appendChild(optionX);
+
+            const optionY = document.createElement('option');
+            optionY.value = index;
+            optionY.textContent = name;
+            yAxisSelect.appendChild(optionY);
+         });
+
+         // Set initial selections to first two features
+         xAxisSelect.selectedIndex = 0;
+         yAxisSelect.selectedIndex = 1;
+
+         // Create and display the chart
+         let chart = new Chart(chartContainer, samples, options, handleClick);
+
+         // Event listeners for dropdowns to update the chart
+         xAxisSelect.addEventListener('change', () => {
+            updateChart();
+         });
+
+         yAxisSelect.addEventListener('change', () => {
+            updateChart();
+         });
+
+         function updateChart() {
+            const xFeature = parseInt(xAxisSelect.value);
+            const yFeature = parseInt(yAxisSelect.value);
+
+            // Update chart options with selected features
+            options.axesLabels = [featureNames[xFeature], featureNames[yFeature]];
+            
+            // Update the data points to use selected features
+            chart.samples = samples.map(sample => {
+               return {
+                  ...sample,
+                  point: [sample.point[xFeature], sample.point[yFeature]]
+               };
+            });
+
+            // Redraw the chart with the new axes
+            chart.update();
+         }
+
+         updateChart();
       </script>
    </body>
 </html>
